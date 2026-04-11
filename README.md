@@ -27,6 +27,8 @@ Este proyecto es un MVP (Producto Mínimo Viable) para un sistema de detección 
 3.  **Instala las dependencias:**
     ```bash
     pip install -r requirements.txt
+    # Para Anaconda
+    pip install -r requirements.txt
     ```
 
 4.  **Coloca tu modelo entrenado:**
