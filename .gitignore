@@ -1,0 +1,34 @@
+# Logs
+*.log
+logs/
+
+# Data
+*.csv
+*.json
+*.xml
+*.txt # Si guardas datos intermedios como txt
+data/
+
+# Checkpoints
+checkpoints/
+runs/detect/train/ # Evita subir resultados de entrenamientos locales
+runs/detect/predict/ # Evita subir predicciones locales
+runs/ # Evita subir toda la carpeta de runs si no es necesaria
+
+# Model weights (Opcional, si best.pt es muy grande)
+model/best.pt # Descomentar esta línea si decides no subir el modelo al repo
+# Si decides subirlo (si es razonablemente pequeño), comenta la línea anterior
+
+# Environment
+env/
+venv/
+ENV/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+.streamlit/config.toml
+.streamlit/secrets.toml
