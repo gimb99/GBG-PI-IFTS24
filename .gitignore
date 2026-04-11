@@ -16,8 +16,8 @@ runs/detect/predict/ # Evita subir predicciones locales
 runs/ # Evita subir toda la carpeta de runs si no es necesaria
 
 # Model weights (Opcional, si best.pt es muy grande)
-model/best.pt # Descomentar esta línea si decides no subir el modelo al repo
-# Si decides subirlo (si es razonablemente pequeño), comenta la línea anterior
+# Descomentar esta línea si se va a subir el modelo al repo
+# model/best_v1.pt 
 
 # Environment
 env/
