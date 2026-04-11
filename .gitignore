@@ -32,3 +32,6 @@ Thumbs.db
 .streamlit/
 .streamlit/config.toml
 .streamlit/secrets.toml
+
+# pycache
+src/__pycache__
