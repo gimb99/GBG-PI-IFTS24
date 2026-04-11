@@ -1,8 +1,13 @@
+# app.py
+
 import streamlit as st
-from src.inference import VideoDetector
 import tempfile
 import os
 import logging
+# Manejo imagenes y videos
+from src.inference import VideoDetector # Asumimos que VideoDetector tambien puede manejar imagenes
+from PIL import Image # Importar Pillow para manejar imagenes
+import cv2 # Importar OpenCV para leer imagenes si es necesario
 
 # Configurar logging para la aplicación
 logging.basicConfig(level=logging.INFO)
@@ -19,49 +24,98 @@ def main():
         st.error(f"Error crítico: No se encontró el modelo en '{MODEL_PATH}'. Asegúrate de haberlo colocado en la carpeta 'model'.")
         st.stop()
 
-    uploaded_file = st.file_uploader("Sube un archivo de video (MP4, MOV, AVI, etc.)", type=['mp4', 'mov', 'avi', 'mkv'])
+    # Permitir subir archivos de imagen o video
+    uploaded_file = st.file_uploader(
+        "Sube una imagen (JPG, PNG) o un video (MP4, MOV, AVI, etc.)",
+        type=['jpg', 'jpeg', 'png', 'mp4', 'mov', 'avi', 'mkv'] # Tipos de archivo permitidos
+    )
 
     if uploaded_file is not None:
-        # Mostrar el video subido
-        st.subheader("Video Original")
-        # Usar un temporal file para manejar el video subido por Streamlit
-        tfile = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1])
-        tfile.write(uploaded_file.read())
-        temp_input_path = tfile.name
-        tfile.close()
+        file_extension = os.path.splitext(uploaded_file.name)[1].lower()
 
-        # Mostrar video original
-        st.video(temp_input_path)
+        # Verificar si es una imagen o un video
+        if file_extension in ['.jpg', '.jpeg', '.png']:
+            handle_image_upload(uploaded_file)
+        elif file_extension in ['.mp4', '.mov', '.avi', '.mkv']:
+            handle_video_upload(uploaded_file)
+        else:
+            st.error(f"Tipo de archivo no soportado: {file_extension}")
 
-        # Botón para iniciar el procesamiento
-        if st.button("Procesar Video"):
-            st.info("Iniciando detección... Esto puede tardar unos minutos.")
+def handle_image_upload(uploaded_file):
+    """Maneja la subida y procesamiento de una imagen."""
+    st.subheader("Imagen Original")
+    # Mostrar la imagen subida
+    image = Image.open(uploaded_file)
+    st.image(image, caption='Imagen Subida', use_column_width=True)
 
-            # Ruta temporal para el video de salida
-            temp_output_path = tempfile.mktemp(suffix='.mp4')
+    if st.button("Procesar Imagen"):
+        st.info("Iniciando detección en la imagen...")
+        try:
+            # Inicializar el detector
+            detector = VideoDetector(MODEL_PATH) # VideoDetector debe poder manejar imagenes
 
-            try:
-                # Inicializar el detector
-                detector = VideoDetector(MODEL_PATH)
-                # Realizar la detección y guardar video anotado
-                detector.detect_and_annotate_video(temp_input_path, temp_output_path, conf_threshold=0.5)
+            # Convertir PIL Image a array de OpenCV
+            # OpenCV usa BGR, Pillow usa RGB, pero plot() de ultralytics maneja esto internamente
+            opencv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
-                st.success("¡Detección finalizada!")
+            # Realizar predicción en la imagen
+            results = detector.model(opencv_image, conf=0.5) # Usar confianza directamente aqui o como parametro
 
-                # Mostrar video anotado
-                st.subheader("Video con Detecciones")
-                st.video(temp_output_path)
+            # Anotar la imagen con las detecciones
+            annotated_opencv_image = results[0].plot()
 
-            except Exception as e:
-                st.error(f"Ocurrió un error durante la detección: {e}")
-                logger.error(f"Error en app.py: {e}")
+            # Convertir la imagen anotada de vuelta a PIL para mostrarla en Streamlit
+            annotated_pil_image = Image.fromarray(cv2.cvtColor(annotated_opencv_image, cv2.COLOR_BGR2RGB))
 
-            finally:
-                # Limpiar archivos temporales
-                if os.path.exists(temp_input_path):
-                    os.remove(temp_input_path)
-                if os.path.exists(temp_output_path):
-                    os.remove(temp_output_path)
+            st.success("¡Detección en imagen finalizada!")
+            st.subheader("Imagen con Detecciones")
+            st.image(annotated_pil_image, caption='Imagen con Detecciones', use_column_width=True)
+
+        except Exception as e:
+            st.error(f"Ocurrió un error durante la detección de la imagen: {e}")
+            logger.error(f"Error en handle_image_upload: {e}")
+
+def handle_video_upload(uploaded_file):
+    """Maneja la subida y procesamiento de un video."""
+    st.subheader("Video Original")
+    # Usar un temporal file para manejar el video/imagen subido por Streamlit
+    tfile = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1])
+    tfile.write(uploaded_file.read())
+    temp_input_path = tfile.name
+    tfile.close()
+
+    # Mostrar video original
+    st.video(temp_input_path)
+
+    # Botón para iniciar el procesamiento
+    if st.button("Procesar Video"):
+        st.info("Iniciando detección en el video... Esto puede tardar unos minutos.")
+
+        # Ruta temporal para el video de salida
+        temp_output_path = tempfile.mktemp(suffix='.mp4')
+
+        try:
+            # Inicializar el detector
+            detector = VideoDetector(MODEL_PATH)
+            # Realizar la detección y guardar video anotado
+            detector.detect_and_annotate_video(temp_input_path, temp_output_path, conf_threshold=0.5)
+
+            st.success("¡Detección en video finalizada!")
+
+            # Mostrar video anotado
+            st.subheader("Video con Detecciones")
+            st.video(temp_output_path)
+
+        except Exception as e:
+            st.error(f"Ocurrió un error durante la detección del video: {e}")
+            logger.error(f"Error en handle_video_upload: {e}")
+
+        finally:
+            # Limpiar archivos temporales
+            if os.path.exists(temp_input_path):
+                os.remove(temp_input_path)
+            if os.path.exists(temp_output_path):
+                os.remove(temp_output_path)
 
 if __name__ == "__main__":
     main()
