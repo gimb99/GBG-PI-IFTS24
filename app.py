@@ -1,5 +1,3 @@
-# app.py
-
 import streamlit as st
 import tempfile
 import os
@@ -51,18 +49,15 @@ def handle_image_upload(uploaded_file):
     if st.button("Procesar Imagen"):
         st.info("Iniciando detección en la imagen...")
         try:
+            import numpy as np # Importar numpy si no está ya importado globalmente
             # Inicializar el detector
-            detector = VideoDetector(MODEL_PATH) # VideoDetector debe poder manejar imagenes
+            detector = VideoDetector(MODEL_PATH) # <-- Usar VideoDetector en lugar de Detector
 
-            # Convertir PIL Image a array de OpenCV
-            # OpenCV usa BGR, Pillow usa RGB, pero plot() de ultralytics maneja esto internamente
+            # Convertir PIL Image a array de OpenCV (BGR)
             opencv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
-            # Realizar predicción en la imagen
-            results = detector.model(opencv_image, conf=0.5) # Usar confianza directamente aqui o como parametro
-
-            # Anotar la imagen con las detecciones
-            annotated_opencv_image = results[0].plot()
+            # Realizar predicción y anotación usando el metodo de la clase VideoDetector
+            annotated_opencv_image = detector.detect_and_annotate_image(opencv_image, conf_threshold=0.5)
 
             # Convertir la imagen anotada de vuelta a PIL para mostrarla en Streamlit
             annotated_pil_image = Image.fromarray(cv2.cvtColor(annotated_opencv_image, cv2.COLOR_BGR2RGB))
