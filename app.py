@@ -44,7 +44,7 @@ def handle_image_upload(uploaded_file):
     st.subheader("Imagen Original")
     # Mostrar la imagen subida
     image = Image.open(uploaded_file)
-    st.image(image, caption='Imagen Subida', use_column_width=True)
+    st.image(image, caption='Imagen Subida', width="stretch")
 
     if st.button("Procesar Imagen"):
         st.info("Iniciando detección en la imagen...")
@@ -64,7 +64,7 @@ def handle_image_upload(uploaded_file):
 
             st.success("¡Detección en imagen finalizada!")
             st.subheader("Imagen con Detecciones")
-            st.image(annotated_pil_image, caption='Imagen con Detecciones', use_column_width=True)
+            st.image(annotated_pil_image, caption='Imagen con Detecciones', width="stretch")
 
         except Exception as e:
             st.error(f"Ocurrió un error durante la detección de la imagen: {e}")
