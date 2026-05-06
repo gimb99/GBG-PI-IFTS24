@@ -7,13 +7,9 @@ import os
 logger = logging.getLogger(__name__)
 
 class VideoDetector:
-    """
-    Clase para cargar el modelo YOLO y realizar detecciones en imágenes y videos.
-    """
+    # Carga modelo YOLO
     def __init__(self, model_path: str):
         """
-        Inicializa el detector con el modelo especificado.
-
         Args:
             model_path (str): Ruta al archivo .pt del modelo entrenado.
         """
@@ -27,16 +23,15 @@ class VideoDetector:
 
     def _run_inference(self, input_data, conf_threshold: float = 0.5):
         """
-        Función privada para ejecutar la inferencia del modelo en un dato de entrada.
-        Este método puede manejar arrays de imagen (OpenCV) o frames individuales de video.
+        Función privada para inferir modelo
+        Puede manejar arrays de imagen (OpenCV) o frames individuales de video.
         """
         results = self.model(input_data, conf=conf_threshold)
         return results[0]
 
     def detect_and_annotate_image(self, image_array_or_path, conf_threshold: float = 0.5):
         """
-        Realiza detecciones en una imagen (array OpenCV o ruta de archivo)
-        y devuelve el array de imagen anotada.
+        Toma array OpenCV o ruta de archivo y devuelve array de imagen anotada
 
         Args:
             image_array_or_path (np.ndarray or str): Imagen como array NumPy (BGR) o ruta del archivo.
@@ -70,12 +65,12 @@ class VideoDetector:
         annotated_image = results.plot()
 
         logger.info("Detección en imagen finalizada.")
-        return annotated_image
+        return results[0]
 
 
     def detect_and_annotate_video(self, input_video_path: str, output_video_path: str, conf_threshold: float = 0.5):
         """
-        Lee un video, realiza detecciones en cada frame y guarda un video anotado.
+        Lee video, detecta por cada frame y guarda un video anotado
 
         Args:
             input_video_path (str): Ruta al video de entrada.

@@ -11,6 +11,9 @@ import cv2 # Importar OpenCV para leer imagenes si es necesario
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Asigno confidence a usar
+detection_confidence = 0.5
+
 # Nombre del archivo del modelo (debe coincidir con el que esté en la carpeta model/)
 MODEL_PATH = "model/best.pt"
 
@@ -19,7 +22,7 @@ def main():
 
     # Verificar si el modelo existe
     if not os.path.exists(MODEL_PATH):
-        st.error(f"Error crítico: No se encontró el modelo en '{MODEL_PATH}'. Asegúrate de haberlo colocado en la carpeta 'model'.")
+        st.error(f"Error crítico: No se encontró el modelo en '{MODEL_PATH}'. Revisar carpeta 'model'.")
         st.stop()
 
     # Permitir subir archivos de imagen o video
@@ -57,13 +60,35 @@ def handle_image_upload(uploaded_file):
             opencv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
             # Realizar predicción y anotación usando el metodo de la clase VideoDetector
-            annotated_opencv_image = detector.detect_and_annotate_image(opencv_image, conf_threshold=0.5)
+            detected_image = detector.detect_and_annotate_image(opencv_image, conf_threshold=detection_confidence)
+            # Bajo imagen detectada
+            annotated_opencv_image = detected_image.plot()
+
+
+            # TODO Extraer detecciones
+            boxes = detected_image[0].boxes
+            class_names = detected_image[0].names  # dict basado en classes.txt: {0: 'muleta', 1: 'silla_de_ruedas', ...}
+
+            # Carga de objetos detectados
+            detected_objects = []
+            for box in boxes:
+                cls_id = int(box.cls.item()) # Class ID
+                conf = float(box.conf.item()) # Confidence
+                if conf >= detection_confidence:
+                    label = class_names[cls_id]
+                    detected_objects.append((label, conf))
+
+            # Notifico detecciones
+            if detected_objects:
+                st.warning(f"Detección confirmada: {', '.join([f'{lbl} ({conf:.2f})' for lbl, conf in detected_objects])}")
+            else:
+                st.info("No se detectaron objetos ortopédicos con la confianza configurada.")
 
             # Convertir la imagen anotada de vuelta a PIL para mostrarla en Streamlit
             annotated_pil_image = Image.fromarray(cv2.cvtColor(annotated_opencv_image, cv2.COLOR_BGR2RGB))
 
             st.success("¡Detección en imagen finalizada!")
-            st.subheader("Imagen con Detecciones")
+            st.subheader("Imagen procesada")
             st.image(annotated_pil_image, caption='Imagen con Detecciones', width="stretch")
 
         except Exception as e:
@@ -93,7 +118,7 @@ def handle_video_upload(uploaded_file):
             # Inicializar el detector
             detector = VideoDetector(MODEL_PATH)
             # Realizar la detección y guardar video anotado
-            detector.detect_and_annotate_video(temp_input_path, temp_output_path, conf_threshold=0.5)
+            detector.detect_and_annotate_video(temp_input_path, temp_output_path, conf_threshold=detection_confidence)
 
             st.success("¡Detección en video finalizada!")
 
