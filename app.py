@@ -18,7 +18,8 @@ detection_confidence = 0.5
 MODEL_PATH = "model/best.pt"
 
 def main():
-    st.title("Sistema de Detección de Objetos Ortopédicos - MVP")
+    st.title("DDAO - MVP")
+    st.subheader("Detección de Discapacitados para Asistencia Optimizada")
 
     # Verificar si el modelo existe
     if not os.path.exists(MODEL_PATH):
@@ -64,10 +65,11 @@ def handle_image_upload(uploaded_file):
             # Bajo imagen detectada
             annotated_opencv_image = detected_image.plot()
 
-
             # TODO Extraer detecciones
-            boxes = detected_image[0].boxes
-            class_names = detected_image[0].names  # dict basado en classes.txt: {0: 'muleta', 1: 'silla_de_ruedas', ...}
+            boxes = detected_image.boxes
+            class_names = detected_image.names  # dict basado en classes.txt: {0: 'muleta', 1: 'silla_de_ruedas', ...}
+
+            print(detected_image.boxes)
 
             # Carga de objetos detectados
             detected_objects = []

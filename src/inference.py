@@ -65,7 +65,7 @@ class VideoDetector:
         annotated_image = results.plot()
 
         logger.info("Detección en imagen finalizada.")
-        return results[0]
+        return results
 
 
     def detect_and_annotate_video(self, input_video_path: str, output_video_path: str, conf_threshold: float = 0.5):
