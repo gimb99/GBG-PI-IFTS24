@@ -8,6 +8,9 @@ logs/
 *.xml
 *.txt # Si guardas datos intermedios como txt
 data/
+custom_data/
+runs/
+yolo*.pt
 
 # Checkpoints
 checkpoints/
