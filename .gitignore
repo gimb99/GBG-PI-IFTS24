@@ -8,6 +8,9 @@ logs/
 *.xml
 *.txt # Si guardas datos intermedios como txt
 data/
+custom_data/
+runs/
+yolo*.pt
 
 # Checkpoints
 checkpoints/
@@ -16,8 +19,8 @@ runs/detect/predict/ # Evita subir predicciones locales
 runs/ # Evita subir toda la carpeta de runs si no es necesaria
 
 # Model weights (Opcional, si best.pt es muy grande)
-# Descomentar esta línea si se va a subir el modelo al repo
-# model/best_v1.pt 
+# Descomentar esta línea si NO se va a subir el modelo al repo
+model/
 
 # Environment
 env/
@@ -32,3 +35,6 @@ Thumbs.db
 .streamlit/
 .streamlit/config.toml
 .streamlit/secrets.toml
+
+# pycache
+src/__pycache__
