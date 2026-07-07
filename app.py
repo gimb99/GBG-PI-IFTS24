@@ -179,7 +179,7 @@ def handle_video_upload_layout(uploaded_file, confidence, output_placeholder, lo
             detector = VideoDetector(MODEL_PATH)
             
             # Procesar video (puedes agregar lógica de progreso aquí si modificas inference.py)
-            detector.detect_and_annotate_video(temp_input_path, temp_output_path, conf_threshold=confidence)
+            detection_occurred = detector.detect_and_annotate_video(temp_input_path, temp_output_path, conf_threshold=confidence)
             
             progress_bar.progress(100)
             status_text.text("✅ Video procesado")
@@ -189,7 +189,18 @@ def handle_video_upload_layout(uploaded_file, confidence, output_placeholder, lo
             
             with log_container:
                 st.success("✨ Procesamiento de video completado")
-                st.info("📹 El video anotado muestra las detecciones frame a frame")
+                
+                # Old
+                #st.info("📹 El video anotado muestra las detecciones frame a frame")
+                
+                if detection_occurred:
+                    msg = "DDAO Alerta: Se detectaron objetos ortopédicos en el video procesado."
+                    st.warning(msg) # Mostrar alerta en la UI de Streamlit
+                    # Enviar notificación externa
+                    send_telegram_notification(msg) # Llamar a la función mejorada
+                else:
+                    st.info("No se detectaron objetos ortopédicos con la confianza configurada en el video.")
+
         
         except Exception as e:
             with log_container:
