@@ -8,6 +8,9 @@ from src.inference import VideoDetector # Asumimos que VideoDetector tambien pue
 from PIL import Image # Importar Pillow para manejar imagenes
 import cv2 # Importar OpenCV para leer imagenes si es necesario
 
+# Sistema basico de notificaciones
+from src.utils import send_telegram_notification
+
 # Configurar logging para la aplicación
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -43,16 +46,6 @@ def main():
 
     if uploaded_file is not None:
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
-
-        """"
-        # Verificar si es una imagen o un video
-        if file_extension in ['.jpg', '.jpeg', '.png']:
-            handle_image_upload(uploaded_file)
-        elif file_extension in ['.mp4', '.mov', '.avi', '.mkv']:
-            handle_video_upload(uploaded_file)
-        else:
-            st.error(f"Tipo de archivo no soportado: {file_extension}")
-        """
         with col_left:
             st.markdown("### Pre-procesamiento")
 
@@ -138,7 +131,13 @@ def handle_image_upload_layout(uploaded_file, confidence, output_placeholder, lo
                 if detected_objects:
                     count = len(detected_objects)
                     details = ", ".join([f"{lbl} ({conf:.2f})" for lbl, conf in detected_objects])
-                    st.warning(f"✅ **Detección confirmada:** {count} objeto(s) detectado(s)\n\n📌 Detalles: {details}")
+
+                    msg = f"✅ **Detección confirmada:** {count} objeto(s) detectado(s)\n\n📌 Detalles: {details}"
+                    
+                    # Notificaciones front y externas
+                    st.warning(msg)
+                    send_telegram_notification(msg)
+                    #fin if
                 else:
                     st.info("ℹ️ No se detectaron objetos ortopédicos con la confianza configurada.")
             
@@ -168,7 +167,7 @@ def handle_video_upload_layout(uploaded_file, confidence, output_placeholder, lo
     # Mostrar video original
     output_placeholder.video(temp_input_path)
     
-    if st.button("🎬 Procesar Video", type="primary"):
+    if st.button("Procesar Video", type="primary"):
         with log_container:
             st.info("⏳ Iniciando procesamiento de video...")
             progress_bar = st.progress(0)

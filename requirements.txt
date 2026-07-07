@@ -3,3 +3,5 @@ ultralytics==8.4.37        # Versión exacta usada en Colab
 streamlit>=1.28.0         # Versión reciente de Streamlit
 opencv-python-headless==4.13.0.92 # Versión exacta de OpenCV usada en Colab como dependencia de Ultralytics
 # Si Streamlit requiere OpenCV con GUI, usar `opencv-python==4.13.0.92` en lugar de `opencv-python-headless`
+# Para sistema notificaciones
+requests>=2.31.0
