@@ -36,14 +36,89 @@ def main():
     # Permitir subir archivos de imagen o video
     st.markdown("---")
     st.subheader("Ingreso de Imágenes/Video")
+
+    flujo_manejo_imagen_unica()
+
+    #Fin main
+
+def flujo_manejo_multirecurso():
+    # Permitir múltiples archivos
+    uploaded_files = st.file_uploader(
+        "Sube una o más imágenes (JPG, PNG) o videos (MP4, MOV, AVI, etc.)",
+        type=['jpg', 'jpeg', 'png', 'mp4', 'mov', 'avi', 'mkv'],
+        accept_multiple_files=True  # <-- Clave para múltiples archivos
+    )
+
+    if uploaded_files:
+        # Iterar sobre cada archivo subido
+        for i, uploaded_file in enumerate(uploaded_files):
+            file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+
+            # Crear un contenedor único para cada archivo usando el índice
+            with st.expander(f"Archivo {i+1}: {uploaded_file.name}", expanded=True):
+                col_left, col_right = st.columns([1, 2], gap="large")
+
+                with col_left:
+                    st.markdown("### ⚙️ Pre-procesamiento")
+                    detection_confidence = st.slider(
+                        f"Umbral de confianza ({uploaded_file.name})",
+                        min_value=0.0,
+                        max_value=1.0,
+                        value=DEFAULT_CONFIDENCE,
+                        step=0.05,
+                        key=f"slider_{i}"  # Clave única para sliders múltiples
+                    )
+
+                    st.info(f"Confianza: **{detection_confidence:.2f}**")
+
+                    # Estado para este archivo específico
+                    if f"processed_{i}" not in st.session_state:
+                        st.session_state[f"processed_{i}"] = False
+
+                    # Botón de procesamiento (solo si no está procesado)
+                    if not st.session_state[f"processed_{i}"]:
+                        if st.button(f"🔍 Procesar {uploaded_file.name}", key=f"btn_{i}", type="primary"):
+                            st.session_state[f"processed_{i}"] = True
+                            # Llamar a la función de procesamiento con los placeholders correctos
+                            if file_extension in ['.jpg', '.jpeg', '.png']:
+                                # PASAR LOS PLACEHOLDERS DE LA DERECHA CORRECTA
+                                handle_image_upload_layout(uploaded_file, detection_confidence, col_right.empty(), col_right.container())
+                            elif file_extension in ['.mp4', '.mov', '.avi', '.mkv']:
+                                # PASAR LOS PLACEHOLDERS DE LA DERECHA CORRECTA
+                                handle_video_upload_layout(uploaded_file, detection_confidence, col_right.empty(), col_right.container())
+                    else:
+                        st.info("✅ Procesamiento completado. Resultados abajo.")
+
+                # Esta parte del código está DENTRO del expander, por lo tanto, los placeholders
+                # deben ser creados DENTRO de este contexto para pertenecer a este expander.
+                # La lógica anterior que ponía placeholders fuera del if era incorrecta para este diseño.
+                # Se mueven dentro de la lógica de procesamiento o se crean antes de la condición del botón.
+                # Lo mejor es crearlos ANTES de decidir si procesar o no.
+
+                # OPCIÓN MEJORADA: Crear placeholders fuera de la condición del botón
+                # pero dentro del expander y pasarlos a las funciones.
+                # (Ya está hecho arriba al llamar las funciones con col_right.empty() y col_right.container())
+
+                # with col_right: [ESTO YA NO ES NECESARIO ACA]
+                #    st.markdown("### 🖼️ Multimedia Procesada")
+                #    output_placeholder = st.empty()
+                #    st.markdown("### 📋 Registro de Procesamiento")
+                #    log_container = st.container()
+
+                # Si ya fue procesado, mostrar resultados (esto se haría dentro de las funciones de manejo o con lógica adicional)
+                # if st.session_state[f"processed_{i}"]:
+                #    # Aquí podrías mostrar resultados previamente guardados si los guardas en session_state
+                #    pass
+
+def flujo_manejo_imagen_unica():
+    # Crear layout de columnas - Pruebo fuera de if None
+    col_left, col_right = st.columns([0.33, 0.66], gap="large")
+
     uploaded_file = st.file_uploader(
         "Sube una imagen (JPG, PNG) o un video (MP4, MOV, AVI, etc.)",
         type=['jpg', 'jpeg', 'png', 'mp4', 'mov', 'avi', 'mkv'] # Tipos de archivo permitidos
     )
-
-    # Crear layout de columnas - Pruebo fuera de if None
-    col_left, col_right = st.columns([0.33, 0.66], gap="large")
-
+    
     if uploaded_file is not None:
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
         with col_left:
@@ -88,7 +163,6 @@ def main():
             # Fin col_right
 
         # Fin if
-    #Fin main
 
 def handle_image_upload_layout(uploaded_file, confidence, output_placeholder, log_container):
     """Maneja imagen con nuevo layout."""
