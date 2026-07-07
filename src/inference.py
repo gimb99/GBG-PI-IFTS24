@@ -88,6 +88,9 @@ class VideoDetector:
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
+        # Flag de retorno para app
+        detection_occurred = False 
+
         fourcc = cv2.VideoWriter_fourcc(*'mp4v') # Codec para MP4
         out = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
 
@@ -99,6 +102,13 @@ class VideoDetector:
 
             # Ejecutar inferencia en el frame (usando la función común)
             results = self._run_inference(frame, conf_threshold)
+
+            # Verificar si hay cajas detectadas
+            if results.boxes is not None: 
+                high_conf_detections = results.boxes[results.boxes.conf >= conf_threshold]
+                if len(high_conf_detections) > 0:
+                    # Activar flag si se detecta algo
+                    detection_occurred = True
 
             # Anotar el frame
             annotated_frame = results.plot()
@@ -114,6 +124,7 @@ class VideoDetector:
         cap.release()
         out.release()
         logger.info(f"Detección en video finalizada. Video anotado guardado en: {output_video_path}")
+        return detection_occurred 
 
 
 # Ejemplo de uso (descomentar si se ejecuta este archivo directamente)
