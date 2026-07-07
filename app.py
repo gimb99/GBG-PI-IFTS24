@@ -132,7 +132,7 @@ def handle_image_upload_layout(uploaded_file, confidence, output_placeholder, lo
                     count = len(detected_objects)
                     details = ", ".join([f"{lbl} ({conf:.2f})" for lbl, conf in detected_objects])
 
-                    msg = f"✅ **Detección confirmada:** {count} objeto(s) detectado(s)\n\n📌 Detalles: {details}"
+                    msg = f"✅ Detección confirmada: {count} objeto(s) detectado(s)\n\n📌 Detalles: {details}"
                     
                     # Notificaciones front y externas
                     st.warning(msg)
